@@ -106,8 +106,12 @@ export default class Company {
         strings.forEach((s) => this.addEmployee(Employee.fromJSON(s)));
     }
 
-    iterator(predicateFunc = () => true) {
-        return Object.values(this.#employees).filter(predicateFunc).values();
+    * iterator(predicateFunc = () => true) {
+        for (let empl of Object.values(this.#employees)) {
+            if (predicateFunc(empl)) {
+                yield empl;
+            }
+        }
     }
 
     iterable(predicateFunc = () => true) {
