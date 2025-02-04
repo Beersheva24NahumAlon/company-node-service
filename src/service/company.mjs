@@ -105,4 +105,14 @@ export default class Company {
         const strings = text.split("\n");
         strings.forEach((s) => this.addEmployee(Employee.fromJSON(s)));
     }
+
+    iterator(predicateFunc = () => true) {
+        return Object.values(this.#employees).filter(predicateFunc).values();
+    }
+
+    iterable(predicateFunc = () => true) {
+        return {
+            [Symbol.iterator]: () => this.iterator(predicateFunc)
+        };
+    }
 }

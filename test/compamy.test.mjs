@@ -79,4 +79,32 @@ describe("company", () => {
         expect(await company.getEmployee(ID7)).toBeUndefined();
         expect(company).toEqual(oldCompany);
     });
+    it("iterable test", () => {
+        const it = company.iterable();
+        const expected = [empl2, empl1, empl3];
+        const actual = [];
+        for (const empl of it) {
+            actual.push(empl);
+        }
+        expect(actual).toEqual(expected);
+        actual.length = 0;
+        for (const empl of it) {
+            actual.push(empl);
+        }
+        expect(actual).toEqual(expected);
+    });
+    it("iterable test with predicate", () => {
+        const it = company.iterable((empl) => empl instanceof Manager);
+        const expected = [empl2];
+        const actual = [];
+        for (const empl of it) {
+            actual.push(empl);
+        }
+        expect(actual).toEqual(expected);
+        actual.length = 0;
+        for (const empl of it) {
+            actual.push(empl);
+        }
+        expect(actual).toEqual(expected);
+    });
 });
