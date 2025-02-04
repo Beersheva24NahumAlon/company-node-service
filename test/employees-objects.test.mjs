@@ -4,6 +4,7 @@ import WageEmployee from "../src/dto/WageEmployee.mjs";
 import Manager from "../src/dto/Manager.mjs";
 import SalesPerson from "../src/dto/SalesPerson.mjs";
 
+
 const basicSalary = 10000;
 const department = "dep1";
 const id = 1;

@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import Employee from "../src/dto/Employee.mjs";
 import WageEmployee from "../src/dto/WageEmployee.mjs";
 import SalesPerson from "../src/dto/SalesPerson.mjs";
 import Manager from "../src/dto/Manager.mjs";
 import Company from "../src/service/company.mjs";
+import { EMPLOYEE_ALREADY_EXISTS, EMPLOYEE_DOES_NOT_EXIST, INVALID_EMPLOYEE_TYPE } from "../src/exceptions/exceptions.mjs";
 
 const ID1 = 123;
 const SALARY1 = 1000;
@@ -28,15 +29,21 @@ const ID7 = 500;
 const empl1 = new WageEmployee(ID1, DEPARTMENT1, SALARY1, WAGE1, HOURS1);
 const empl2 = new Manager(ID2, DEPARTMENT1, SALARY2, FACTOR1);
 const empl3 = new SalesPerson(ID3, DEPARTMENT2, SALARY3, WAGE1, HOURS1, PERCENT1, SALES1);
-const company = new Company();
-for (const empl of [empl1, empl2, empl3]) {
-    await company.addEmployee(empl);
+let company = new Company();
+
+async function fillCompany() {
+    company = new Company();
+    for await (const empl of [empl1, empl2, empl3]) {
+        company.addEmployee(empl);
+    }
 }
 describe("company", () => {
+    beforeEach(async () => await fillCompany());
     it("addEmployee test", async () => {
         const empl = new Employee(ID4, DEPARTMENT1, SALARY1);
         company.addEmployee(empl);
-        await expect(() => company.addEmployee(empl)).rejects.toThrowError(new Error("The employee with this id is already exists in th company"));
+        await expect(() => company.addEmployee(empl)).rejects.toThrowError(EMPLOYEE_ALREADY_EXISTS(ID4));
+        await expect(() => company.addEmployee(222)).rejects.toThrowError(INVALID_EMPLOYEE_TYPE(222));
     });
     it ("getEmployee test", async () => {
         expect(await company.getEmployee(ID1)).toEqual(empl1);
@@ -44,10 +51,10 @@ describe("company", () => {
     });
     it("removeEmployee test", async () => {
         expect(await company.removeEmployee(ID1)).toEqual(empl1);
-        await expect(() => company.removeEmployee(ID1)).rejects.toThrowError(new Error("The employee with this id doesn't exist in the company"));
+        await expect(() => company.removeEmployee(ID1)).rejects.toThrowError(EMPLOYEE_DOES_NOT_EXIST(ID1));
     });
     it("getDepartmentBudget test", async () => {
-        expect(await company.getDepartmentBudget(DEPARTMENT1)).toBe(SALARY2 * FACTOR1 + SALARY1);
+        expect(await company.getDepartmentBudget(DEPARTMENT1)).toBe(SALARY1 + WAGE1 * HOURS1 + SALARY2 * FACTOR1);
         expect(await company.getDepartmentBudget(DEPARTMENT2)).toBe(SALARY3 + WAGE1 * HOURS1 + PERCENT1 * SALES1 / 100);
         expect(await company.getDepartmentBudget(DEPARTMENT4)).toBe(0);
     });
@@ -66,7 +73,7 @@ describe("company", () => {
         const fileName = "company.txt";
         await company.saveToFile(fileName);
         const oldCompany = company;
-        await company.eraseCompany();
+        company = new Company();
         await company.restoreFromFile(fileName);
         expect(await company.getEmployee(ID2)).toEqual(empl2);
         expect(await company.getEmployee(ID7)).toBeUndefined();

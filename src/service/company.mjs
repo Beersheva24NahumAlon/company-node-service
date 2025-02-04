@@ -1,6 +1,7 @@
 import Employee from "../dto/Employee.mjs";
 import Manager from "../dto/Manager.mjs";
 import {readFile, writeFile} from "node:fs/promises";
+import { EMPLOYEE_ALREADY_EXISTS, EMPLOYEE_DOES_NOT_EXIST, INVALID_EMPLOYEE_TYPE } from "../exceptions/exceptions.mjs";
 
 export default class Company {
     #employees; //{id, Employee}
@@ -14,9 +15,12 @@ export default class Company {
     }
 
     async addEmployee(employee) {
+        if (!(employee instanceof Employee)) {
+            throw INVALID_EMPLOYEE_TYPE(employee);
+        }
         const id = employee.getId();
         if (this.#employees[id] != undefined) {
-            throw new Error("The employee with this id is already exists in th company");
+            throw EMPLOYEE_ALREADY_EXISTS(id);
         }
         this.#employees[id] = employee;
         this.#addEmployeeToDepartment(employee);
@@ -37,7 +41,7 @@ export default class Company {
 	async removeEmployee(id) {
        const empl = this.#employees[id];
        if (empl == undefined) {
-           throw new Error("The employee with this id doesn't exist in the company");
+           throw EMPLOYEE_DOES_NOT_EXIST(id);
        }
        this.#removeEmployeeFromDepartment(empl);
        delete this.#employees[id];
@@ -100,11 +104,5 @@ export default class Company {
         const text = await readFile(fileName, "utf-8");
         const strings = text.split("\n");
         strings.forEach((s) => this.addEmployee(Employee.fromJSON(s)));
-    }
-
-    async eraseCompany() {
-        this.#employees = {};
-        this.#departments = {};
-        this.#stateChanged = false;
     }
 }
