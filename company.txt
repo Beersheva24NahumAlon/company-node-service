@@ -1,0 +1,5 @@
+{"id":120,"department":"QA","basicSalary":2000,"className":"Manager","factor":2}
+{"id":125,"department":"Development","basicSalary":3000,"className":"SalesPerson","wage":100,"hours":10,"percent":0.01,"sales":10000}
+{"id":200,"department":"QA","basicSalary":1000,"className":"Employee"}
+{"id":300,"department":"QA","basicSalary":2000,"className":"Manager","factor":2.5}
+{"id":400,"department":"Audit","basicSalary":3000,"className":"Manager","factor":2.5}
