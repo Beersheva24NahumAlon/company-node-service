@@ -106,17 +106,14 @@ export default class Company {
         strings.forEach((s) => this.addEmployee(Employee.fromJSON(s)));
     }
 
-    * iterator(predicateFunc = () => true) {
-        for (let empl of Object.values(this.#employees)) {
-            if (predicateFunc(empl)) {
-                yield empl;
-            }
-        }
-    }
-
-    iterable(predicateFunc = () => true) {
-        return {
-            [Symbol.iterator]: () => this.iterator(predicateFunc)
+    setIterable(predicateFunc = () => true) {
+        const company = this;
+        this[Symbol.asyncIterator] = async function* () {
+            for (let empl of Object.values(company.#employees)) {
+                if (predicateFunc(empl)) {
+                    yield empl;
+                }
+            } 
         };
     }
 }

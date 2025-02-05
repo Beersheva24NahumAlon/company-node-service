@@ -79,29 +79,36 @@ describe("company", () => {
         expect(await company.getEmployee(ID7)).toBeUndefined();
         expect(company).toEqual(oldCompany);
     });
-    it("iterable test", () => {
-        const it = company.iterable();
+    it("iterable test", async () => {
+        company.setIterable();
         const expected = [empl2, empl1, empl3];
         const actual = [];
-        runIteration(it, actual, expected);
+        await runIteration(company, actual, expected);
         expect(actual).toEqual(expected);
     });
-    it("iterable test with predicate", () => {
-        const it = company.iterable((empl) => empl instanceof Manager);
+    it("iterable test with predicate", async () => {
+        company.setIterable((empl) => empl instanceof Manager);
         const expected = [empl2];
         const actual = [];
-        runIteration(it, actual, expected);
+        await runIteration(company, actual, expected);
+        expect(actual).toEqual(expected);
+    });
+    it("iterable test with predicate returns empty result", async () => {
+        company.setIterable((empl) => empl.computeSalary() < 0);
+        const expected = [];
+        const actual = [];
+        await runIteration(company, actual, expected);
         expect(actual).toEqual(expected);
     });
 });
 
-function runIteration(it, actual, expected) {
-    for (const empl of it) {
+async function runIteration(company, actual, expected) {
+    for await (const empl of company) {
         actual.push(empl);
     }
     expect(actual).toEqual(expected);
     actual.length = 0;
-    for (const empl of it) {
+    for await (const empl of company) {
         actual.push(empl);
     }
 }
