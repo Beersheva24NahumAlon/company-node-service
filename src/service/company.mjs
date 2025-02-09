@@ -1,12 +1,12 @@
 import Employee from "../dto/Employee.mjs";
 import Manager from "../dto/Manager.mjs";
-import {readFile, writeFile} from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { EMPLOYEE_ALREADY_EXISTS, EMPLOYEE_DOES_NOT_EXIST, INVALID_EMPLOYEE_TYPE } from "../exceptions/exceptions.mjs";
 
-export default class Company {
-    #employees; //{id, Employee}
-    #departments; //{department, [Employee]}
-    #stateChanged //boolean
+export class Company {
+    #employees; 
+    #departments; 
+    #stateChanged 
 
     constructor() {
         this.#employees = {};
@@ -14,39 +14,43 @@ export default class Company {
         this.#stateChanged = false;
     }
 
-    async addEmployee(employee) {
-        if (!(employee instanceof Employee)) {
-            throw INVALID_EMPLOYEE_TYPE(employee);
+    async addEmployee(empl) {
+        if (!(empl instanceof Employee)) {
+            throw INVALID_EMPLOYEE_TYPE(empl);
         }
-        const id = employee.getId();
+        const id = empl.getId();
         if (this.#employees[id] != undefined) {
             throw EMPLOYEE_ALREADY_EXISTS(id);
         }
-        this.#employees[id] = employee;
-        this.#addEmployeeToDepartment(employee);
+        this.#employees[id] = empl;
+        this.#addEmployeeToDepartment(empl);
         this.#stateChanged = true;
     }
 
-    #addEmployeeToDepartment(employee) {
-        const department = employee.getDepartment();
+    #addEmployeeToDepartment(empl) {
+        const department = empl.getDepartment();
         const array = this.#departments[department] ?? [];
-        array.push(employee);
+        array.push(empl);
         this.#departments[department] = array;
     }
 
-	async getEmployee(id) {
-       return this.#employees[id];
+    async getEmployee(id) {
+        const empl = this.#employees[id];
+        if (empl == undefined) {
+            throw EMPLOYEE_DOES_NOT_EXIST(id);
+        }
+        return empl;
     }
 
-	async removeEmployee(id) {
-       const empl = this.#employees[id];
-       if (empl == undefined) {
-           throw EMPLOYEE_DOES_NOT_EXIST(id);
-       }
-       this.#removeEmployeeFromDepartment(empl);
-       delete this.#employees[id];
-       this.#stateChanged = true;
-       return empl;
+    async removeEmployee(id) {
+        const empl = this.#employees[id];
+        if (empl == undefined) {
+            throw EMPLOYEE_DOES_NOT_EXIST(id);
+        }
+        this.#removeEmployeeFromDepartment(empl);
+        delete this.#employees[id];
+        this.#stateChanged = true;
+        return empl;
     }
 
     #removeEmployeeFromDepartment(empl) {
@@ -63,7 +67,7 @@ export default class Company {
         }
     }
 
-	async getDepartmentBudget(department) {
+    async getDepartmentBudget(department) {
         let res = 0;
         const array = this.#departments[department];
         if (array != undefined) {
@@ -72,11 +76,11 @@ export default class Company {
         return res;
     }
 
-	async getDepartments() {
+    async getDepartments() {
         return Object.keys(this.#departments);
     }
 
-	async getManagersWithMostFactor() {
+    async getManagersWithMostFactor() {
         const res = [];
         const managers = this.#getManagers();
         if (managers.length > 0) {
@@ -98,6 +102,7 @@ export default class Company {
         const strings = [];
         Object.values(this.#employees).forEach((empl) => strings.push(JSON.stringify(empl)));
         await writeFile(fileName, strings.join("\n"), "utf-8");
+        this.#stateChanged = false;
     }
 
     async restoreFromFile(fileName) {
@@ -113,7 +118,8 @@ export default class Company {
                 if (predicateFunc(empl)) {
                     yield empl;
                 }
-            } 
+            }
         };
     }
 }
+export const service = new Company();

@@ -3,7 +3,7 @@ import Employee from "../src/dto/Employee.mjs";
 import WageEmployee from "../src/dto/WageEmployee.mjs";
 import SalesPerson from "../src/dto/SalesPerson.mjs";
 import Manager from "../src/dto/Manager.mjs";
-import Company from "../src/service/company.mjs";
+import { Company } from "../src/service/company.mjs";
 import { EMPLOYEE_ALREADY_EXISTS, EMPLOYEE_DOES_NOT_EXIST, INVALID_EMPLOYEE_TYPE } from "../src/exceptions/exceptions.mjs";
 
 const ID1 = 123;
@@ -45,9 +45,10 @@ describe("company", () => {
         await expect(() => company.addEmployee(empl)).rejects.toThrowError(EMPLOYEE_ALREADY_EXISTS(ID4));
         await expect(() => company.addEmployee(222)).rejects.toThrowError(INVALID_EMPLOYEE_TYPE(222));
     });
-    it ("getEmployee test", async () => {
+    it("getEmployee test", async () => {
         expect(await company.getEmployee(ID1)).toEqual(empl1);
-        expect(await company.getEmployee(ID6)).toBeUndefined();
+        await expect(() => company.getEmployee(ID6)).rejects.toThrowError(EMPLOYEE_DOES_NOT_EXIST(ID6));
+        //expect(await company.getEmployee(ID6)).toBeUndefined();
     });
     it("removeEmployee test", async () => {
         expect(await company.removeEmployee(ID1)).toEqual(empl1);
@@ -67,7 +68,7 @@ describe("company", () => {
         company.addEmployee(manager1);
         company.addEmployee(manager2);
         expect((await company.getManagersWithMostFactor()).sort((e1, e2) => e1.getId() - e2.getId()))
-                .toEqual([manager2, manager1].sort((e1, e2) => e1.getId() - e2.getId()));
+            .toEqual([manager2, manager1].sort((e1, e2) => e1.getId() - e2.getId()));
     });
     it("saveToFile and restoreFromFile test", async () => {
         const fileName = "company.txt";
@@ -76,7 +77,7 @@ describe("company", () => {
         company = new Company();
         await company.restoreFromFile(fileName);
         expect(await company.getEmployee(ID2)).toEqual(empl2);
-        expect(await company.getEmployee(ID7)).toBeUndefined();
+        await expect(() => company.getEmployee(ID6)).rejects.toThrowError(EMPLOYEE_DOES_NOT_EXIST(ID6));
         expect(company).toEqual(oldCompany);
     });
     it("iterable test", async () => {
