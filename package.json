@@ -1,7 +1,7 @@
 {
   "name": "company",
   "version": "1.0.0",
-  "main": "index.mjs",
+  "main": "src/controller/index.mjs",
   "scripts": {
     "test": "vitest"
   },
